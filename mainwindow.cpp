@@ -92,7 +92,7 @@ void MainWindow::showPose()
     double spend_time;
     curPose = openpose_image(poseNet, curImg, spend_time);
     QString str = QString("%1").arg(spend_time);
-    ui->statusBar->showMessage("openpose spent time: " + str + "s.");
+    ui->statusBar->showMessage("openpose spent time: " + str + " s.");
     displayImg(ui->poseImage, curPose);
 }
 
