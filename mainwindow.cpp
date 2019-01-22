@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setPoseNet();   // load openpose model
     idxFrame = 0;
     timer = new QTimer(this);
+    process = new QProcess();
     connect(timer,SIGNAL(timeout()),this,SLOT(showPose()));     // slot
 }
 
@@ -84,6 +85,15 @@ int MainWindow::setPoseNet(QString modelTxt, QString modelBin)
     return 0;
 }
 
+// Qt call pytorch-pix2pix
+int MainWindow::pix2pix_pytorch()
+{
+    QString curPath = QDir::currentPath();
+    QDir::setCurrent(QString::fromStdString(pix2pixPath));
+    process->start("python3 pix2pix_api.py");
+    QDir::setCurrent(curPath);  // back to previous path.
+}
+
 // slot
 void MainWindow::showPose()
 {
@@ -94,11 +104,22 @@ void MainWindow::showPose()
     QString str = QString("%1").arg(spend_time);
     ui->statusBar->showMessage("openpose spent time: " + str + " s.");
     displayImg(ui->poseImage, curPose);
+    // Extend pose image to 2 times wider
+    Mat combinedImg;
+    cv::hconcat(curPose, curImg, combinedImg);
+    imwrite(pix2pixPath + "datasets/pbug_full/test/curPose.jpg", combinedImg);   // output the pose image to filepath
+
+    /*
+     * The output attitude map is processed by the pytorch-pix2pix script and output to
+     * the result directory. This process is processed by the non-blocking thread in the
+     * background. The next step is to directly display the fake image.
+     */
+    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.png");
+    displayImg(ui->fakeImage, fakeMat);
 }
 
 void MainWindow::on_action_load_video_triggered()
 {
-
     QString filename = QFileDialog::getOpenFileName(this, tr("Open video"), ".", tr("video files(*.mp4 *.avi)"));
     if(!filename.isEmpty())
     {
@@ -112,6 +133,7 @@ void MainWindow::on_action_load_video_triggered()
 
 void MainWindow::on_startBtn_clicked()
 {
+    pix2pix_pytorch();
     if(ui->startBtn->text() == tr("Start"))
         on_action_start_T_triggered();
     else
@@ -122,7 +144,7 @@ void MainWindow::on_action_stop_P_triggered()
 {
     timer->stop();
     ui->startBtn->setText("Start");
-     ui->statusBar->showMessage("Stopped...");
+    ui->statusBar->showMessage("Stopped.");
 }
 
 void MainWindow::on_action_start_T_triggered()

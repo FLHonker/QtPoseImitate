@@ -11,6 +11,8 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 #include "cv_pose.h"
+#include <QProcess>
+#include <QDir>
 
 using namespace cv;
 using namespace std;
@@ -33,11 +35,13 @@ private:
     dnn::Net poseNet;   // openpose caffemodel
     VideoCapture cap;   // load video or camera
     QTimer *timer;
+    QProcess *process;
     // size of cap
     int width_cap, height_cap;
     int count_frame;  // count of frames
     int idxFrame;   // current frame
     const static int msgTime = 2000;    // millisecond
+    const string pix2pixPath = "/home/frank/Study/eclipse-workspace/QtPoseImitate/QtPoseImitate/pytorch_pix2pix/";
     Mat curImg, curPose, curFake;   // current src image, pose image and fake image.
     void displayImg(QLabel* label, Mat mat);    // show opencv-Mat on QLabel
 
@@ -47,7 +51,7 @@ public:
     // set caffemodel of openpose
     int setPoseNet(const QString modelTxt="../QtPoseImitate/pose/coco/pose_deploy_linevec.prototxt",
                    const QString modelBin="../QtPoseImitate/pose/coco/pose_iter_440000.caffemodel");
-    int pix2pix();      // use pix2pix model to generate fake game person.
+    int pix2pix_pytorch();      // use pix2pix model to generate fake game person.
 
 private slots:
     void on_action_load_video_triggered();

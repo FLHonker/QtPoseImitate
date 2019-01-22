@@ -1,11 +1,11 @@
 ### pix2pix网络的API，支持单张pose stick figure的输入并生成real图，供外部调用。
-import torch
-import random
-from PIL import Image
-from models import create_model
-from data import CreateDataLoader
+import os
+import time
 from options.test_options import TestOptions
-import torchvision.transforms as transforms
+from data import CreateDataLoader
+from models import create_model
+from util.visualizer import save_images
+from util import html
 
 
 ### API
@@ -26,24 +26,32 @@ def Pix2PixAPI(opt):
     opt.loadSize = 512
     opt.fineSize = 512
     opt.epoch = 'latest'
+    opt.phase = "test"
     opt.results_dir = './'
     
     model = create_model(opt)
     model.setup(opt)
-    # 图片格式转换为张量
-    # data = imgDataLoader(opt, poseStick)
-
-    data_loader = CreateDataLoader(opt)
-    dataset = data_loader.load_data()
     
+    # create a website
+    web_dir = os.path.join(opt.results_dir, opt.name, '%s_%s' % (opt.phase, opt.epoch))
+    webpage = html.HTML(web_dir, 'Experiment = %s, Phase = %s, Epoch = %s' % (opt.name, opt.phase, opt.epoch))
+
     # test with eval mode. This only affects layers like batchnorm and dropout.
     # pix2pix: we use batchnorm and dropout in the original pix2pix. You can experiment it with and without eval() mode.
     model.eval()
-    for i, data in enumerate(dataset):
-        if i >= opt.num_test:
-            break
-        model.set_input(data)
-        model.test()
+    while True:
+        data_loader = CreateDataLoader(opt)
+        dataset = data_loader.load_data()
+        for i, data in enumerate(dataset):
+            if i >= opt.num_test:
+                break
+            model.set_input(data)
+            model.test()
+            visuals = model.get_current_visuals()
+            img_path = model.get_image_paths()
+            print('processing (%04d)-th image... %s' % (i, img_path))
+            save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
+        time.sleep(0.1)
 
 def gen_fake():
     opt = TestOptions().parse()

@@ -27,21 +27,24 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        cv_pose.cpp \
+        cv_pose.cpp
 
 
 HEADERS += \
         mainwindow.h \
         cv_pose.h
 
+
 FORMS += \
         mainwindow.ui
 
+
 # Add opencv4 libs
 INCLUDEPATH += /usr/local/include \
-               /usr/local/include/opencv4/opencv2
-
-LIBS += /usr/local/lib/libopencv_world.so
+               /usr/local/include/opencv4/opencv2 \
+               -I/usr/include/python3.6m -I/usr/include/python3.6m  -Wno-unused-result -Wsign-compare -g -fdebug-prefix-map=/build/python3.6-A7ntPm/python3.6-3.6.7=. -specs=/usr/share/dpkg/no-pie-compile.specs -fstack-protector -Wformat -Werror=format-security  -DNDEBUG -g -fwrapv -O3 -Wall
+LIBS += /usr/local/lib/libopencv_world.so \
+        -L/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu -L/usr/lib -lpython3.6m -lpthread -ldl  -lutil -lm  -Xlinker -export-dynamic -Wl,-O1 -Wl,-Bsymbolic-functions
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -52,9 +55,7 @@ DISTFILES += \
     pose/coco/pose_iter_440000.caffemodel \
     pose/coco/pose_deploy_linevec.prototxt \
     pose/pbug3_450x420.avi \
-    pose/coco/pose_iter_440000.caffemodel \
-    pose/coco/pose_deploy_linevec.prototxt \
-    pose/pbug3_450x420.avi \
-    pose/coco/pose_iter_440000.caffemodel \
-    pose/coco/pose_deploy_linevec.prototxt \
-    pose/pbug3_450x420.avi
+
+
+SUBDIRS += \
+    QtPoseImitate.pro
