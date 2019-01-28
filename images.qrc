@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/pose_128px.ico</file>
+    </qresource>
+</RCC>

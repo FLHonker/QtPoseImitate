@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>Pose Imitate</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="images.qrc">
+    <normaloff>:/images/pose_128px.ico</normaloff>:/images/pose_128px.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="enabled">
     <bool>true</bool>
@@ -60,7 +64,7 @@
    <widget class="QLabel" name="fakeImage">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>530</x>
       <y>10</y>
       <width>256</width>
       <height>256</height>
@@ -79,7 +83,7 @@
    <widget class="QLabel" name="poseImage">
     <property name="geometry">
      <rect>
-      <x>310</x>
+      <x>300</x>
       <y>10</y>
       <width>192</width>
       <height>192</height>
@@ -260,7 +264,9 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actione_quit</sender>

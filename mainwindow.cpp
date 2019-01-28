@@ -16,8 +16,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;
     cap.release();
+    delete ui;
+    delete timer;
+    delete process;
+    delete aboutDlg;
 }
 
 void MainWindow::displayImg(QLabel *label, Mat mat)
@@ -91,7 +94,7 @@ int MainWindow::pix2pix_pytorch()
     QString curPath = QDir::currentPath();
     QDir::setCurrent(QString::fromStdString(pix2pixPath));
     process->start("python3 pix2pix_api.py");
-    QDir::setCurrent(curPath);  // back to previous path.
+//    QDir::setCurrent(curPath);  // back to previous path.
 }
 
 // slot
@@ -114,7 +117,7 @@ void MainWindow::showPose()
      * the result directory. This process is processed by the non-blocking thread in the
      * background. The next step is to directly display the fake image.
      */
-    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.png");
+    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.kkkololjpg");
     displayImg(ui->fakeImage, fakeMat);
 }
 
@@ -155,7 +158,44 @@ void MainWindow::on_action_start_T_triggered()
         QMessageBox::warning(this, "Warning", "Please load VideoCaptire first!");
         return;
     }
-    timer->start(5);
+    timer->start(5);    // msec
     ui->startBtn->setText("Stop");
     ui->statusBar->showMessage("Running...");
+}
+
+// show about window
+void MainWindow::on_action_about_triggered()
+{
+    /*
+    QMessageBox::about(this, "About", "@title: Pose Imitate\n"
+                                      "@author: Frank Liu\n"
+                                      "@time: 2018.11 - 2019.2\n"
+                                      "@version: 0.8"
+                                      "@Desc: Simulation and Implementation of Game Characters Based on cGAN "
+                                      " - Frank Liu's graduation project.\n"
+                                      "@License: private. Do not pass!\n"
+                       );
+    */
+    // Custom "about" dialog
+    aboutDlg = new AboutDialog();
+    aboutDlg->show();
+}
+
+// how to use
+void MainWindow::on_action_how_to_use_triggered()
+{
+    QMessageBox::information(this, "how to use",
+                             "* manual:\n"
+                             "1. You first need to load the video of the correct "
+                             "   size from the file or camera. \n"
+                             "2. Click the “Start” button to start the calculation in real"
+                             "   time. The image frame on the left shows the source video, the"
+                             "   middle is the image of the estimation of the human pose of"
+                             "   openpose, and the right is the simulation of the game characters"
+                             "   synthesized by pix2pix according to the pose stick figure. \n"
+                             "3. You can pause the observation at any time using “Stop” during"
+                             "   the run. \n"
+                             "4. The amount of calculation is huge. Generally, the laptop will"
+                             "   make a loud noise and heat. You can quit and all resources can be"
+                             "   released.\n");
 }

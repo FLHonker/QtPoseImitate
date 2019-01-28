@@ -6,13 +6,14 @@
 #include <QFileDialog>
 #include <QLabel>
 #include <QTimer>
+#include <QProcess>
+#include <QDir>
+#include <aboutdialog.h>
 #include <string>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 #include "cv_pose.h"
-#include <QProcess>
-#include <QDir>
 
 using namespace cv;
 using namespace std;
@@ -36,6 +37,7 @@ private:
     VideoCapture cap;   // load video or camera
     QTimer *timer;
     QProcess *process;
+    AboutDialog *aboutDlg;
     // size of cap
     int width_cap, height_cap;
     int count_frame;  // count of frames
@@ -59,6 +61,8 @@ private slots:
     void on_action_stop_P_triggered();
     void on_action_start_T_triggered();
     void showPose();     // estimate pose by DNN and show on the panel.
+    void on_action_about_triggered();
+    void on_action_how_to_use_triggered();
 };
 
 #endif // MAINWINDOW_H

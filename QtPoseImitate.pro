@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT      += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -27,16 +27,19 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        cv_pose.cpp
+        cv_pose.cpp \
+        aboutdialog.cpp
 
 
 HEADERS += \
         mainwindow.h \
-        cv_pose.h
+        cv_pose.h \
+        aboutdialog.h
 
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        aboutdialog.ui
 
 
 # Add opencv4 libs
@@ -55,7 +58,11 @@ DISTFILES += \
     pose/coco/pose_iter_440000.caffemodel \
     pose/coco/pose_deploy_linevec.prototxt \
     pose/pbug3_450x420.avi \
+    images/
 
 
 SUBDIRS += \
     QtPoseImitate.pro
+
+RESOURCES += \
+    images.qrc
