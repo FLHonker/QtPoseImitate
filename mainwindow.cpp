@@ -117,7 +117,7 @@ void MainWindow::showPose()
      * the result directory. This process is processed by the non-blocking thread in the
      * background. The next step is to directly display the fake image.
      */
-    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.jpg");
+    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix_result/test_latest/images/curPose_fake_B.jpg");
     displayImg(ui->fakeImage, fakeMat);
 }
 

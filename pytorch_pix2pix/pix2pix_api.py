@@ -13,7 +13,7 @@ from util import html
 def Pix2PixAPI(opt):
 
     # hard-code some parameters for api
-    opt.name = 'pbug_pix2pix'
+    opt.name = 'pbug_pix2pix_result'
     opt.model = 'pix2pix'       # required!!! why? unknown.
     opt.dataroot = './datasets/pbug_full'
     opt.num_threads = 1   # test code only supports num_threads = 1
