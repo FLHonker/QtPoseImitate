@@ -5,4 +5,5 @@ pose/
 pbug_full/
 checkpoints/
 __pycache__/
-
+*.mp4
+*.avi
