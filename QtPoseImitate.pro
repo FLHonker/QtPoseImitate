@@ -27,13 +27,11 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        cv_pose.cpp \
         aboutdialog.cpp
 
 
 HEADERS += \
         mainwindow.h \
-        cv_pose.h \
         aboutdialog.h
 
 
@@ -55,9 +53,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
-    pose/coco/pose_iter_440000.caffemodel \
-    pose/coco/pose_deploy_linevec.prototxt \
-    pose/pbug3_450x420.avi \
     images/
 
 

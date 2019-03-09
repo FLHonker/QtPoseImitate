@@ -1,5 +1,6 @@
 *.o
 *.caffemodel
+*.h5
 pose/
 *.pth
 pbug_full/

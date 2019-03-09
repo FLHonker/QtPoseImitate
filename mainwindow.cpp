@@ -7,10 +7,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setPoseNet();   // load openpose model
-    idxFrame = 0;
     timer = new QTimer(this);
-    process = new QProcess();
+    openpose_pyprocess = new QProcess();
+    pix2pix_pyprocess = new QProcess();
     connect(timer,SIGNAL(timeout()),this,SLOT(showPose()));     // slot
 }
 
@@ -19,7 +18,8 @@ MainWindow::~MainWindow()
     cap.release();
     delete ui;
     delete timer;
-    delete process;
+    delete openpose_pyprocess;
+    delete pix2pix_pyprocess;
     delete aboutDlg;
 }
 
@@ -41,20 +41,6 @@ void MainWindow::displayImg(QLabel *label, Mat mat)
     label->show();
 }
 
-int MainWindow::loadCapture(QString path)
-{
-    cap.open(path.toStdString());
-    if(!cap.isOpened())
-    {
-        ui->statusBar->showMessage("Load video from " + path + " failed!", msgTime);
-        return -1;
-    }
-    width_cap = cap.get(CAP_PROP_FRAME_WIDTH);
-    height_cap = cap.get(CAP_PROP_FRAME_HEIGHT);
-    count_frame = cap.get(CAP_PROP_FRAME_COUNT);
-    return 0;
-}
-
 int MainWindow::loadCapture(int index)
 {
     cap.open(index);
@@ -69,64 +55,36 @@ int MainWindow::loadCapture(int index)
     return 0;
 }
 
-int MainWindow::setPoseNet(QString modelTxt, QString modelBin)
-{
-    // 使用cv的DNN模块加载caffe网络模型,读取.protxt文件和.caffemodel文件
-    poseNet = dnn::readNetFromCaffe(modelTxt.toStdString(), modelBin.toStdString());
-    poseNet.setPreferableBackend(0);
-    poseNet.setPreferableTarget(0);
-    // 检查网络是否读取成功
-    if (poseNet.empty())
-    {
-        ui->statusBar->showMessage("Can't load network by using the following files: prototxt:"
-                                   + modelTxt + ", caffemodel: " + modelBin, msgTime);
-        return -1;
-    }else{
-        // statusBar shows the message for 2s.
-        ui->statusBar->showMessage("pose.caffemodel was loaded successfully!", msgTime);
-    }
-    return 0;
-}
-
 // Qt call pytorch-pix2pix
 int MainWindow::pix2pix_pytorch()
 {
     QString curPath = QDir::currentPath();
     QDir::setCurrent(QString::fromStdString(pix2pixPath));
-    process->start("python3 pix2pix_api.py");
+    pix2pix_pyprocess->start("python3 pix2pix_api.py");
 //    QDir::setCurrent(curPath);  // back to previous path.
 }
 
 // slot
 void MainWindow::showPose()
 {
-    cap >> curImg;
+    curImg = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_real_B.jpg");
+    curPose = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_real_A.jpg");
     displayImg(ui->srcImage, curImg);
-    double spend_time;
-    curPose = openpose_image(poseNet, curImg, spend_time);
-    QString str = QString("%1").arg(spend_time);
-    ui->statusBar->showMessage("openpose spent time: " + str + " s.");
     displayImg(ui->poseImage, curPose);
-    // Extend pose image to 2 times wider
-    Mat combinedImg;
-    cv::hconcat(curPose, curImg, combinedImg);
-    imwrite(pix2pixPath + "datasets/pbug_full/test/curPose.jpg", combinedImg);   // output the pose image to filepath
-
     /*
      * The output attitude map is processed by the pytorch-pix2pix script and output to
      * the result directory. This process is processed by the non-blocking thread in the
      * background. The next step is to directly display the fake image.
      */
-    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix_result/test_latest/images/curPose_fake_B.jpg");
+    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.jpg");
     displayImg(ui->fakeImage, fakeMat);
 }
 
 void MainWindow::on_action_load_video_triggered()
 {
-    QString filename = QFileDialog::getOpenFileName(this, tr("Open video"), ".", tr("video files(*.mp4 *.avi)"));
-    if(!filename.isEmpty())
+    videofile = QFileDialog::getOpenFileName(this, tr("Open video"), ".", tr("video files(*.mp4 *.avi)"));
+    if(!videofile.isEmpty())
     {
-        loadCapture(filename);
         ui->statusBar->showMessage("Video has been loaded successfully!", msgTime);
     }else{
         ui->statusBar->showMessage("No such video file! Retry,please.", msgTime);
@@ -152,7 +110,7 @@ void MainWindow::on_action_stop_P_triggered()
 
 void MainWindow::on_action_start_T_triggered()
 {
-    if(!cap.isOpened())
+    if(videofile == "")
     {
         ui->statusBar->showMessage("Please load VideoCaptire first!");
         QMessageBox::warning(this, "Warning", "Please load VideoCaptire first!");
@@ -161,6 +119,8 @@ void MainWindow::on_action_start_T_triggered()
     timer->start(5);    // msec
     ui->startBtn->setText("Stop");
     ui->statusBar->showMessage("Running...");
+    QDir::setCurrent(QString::fromStdString(openposePath));
+    openpose_pyprocess->start("python3 keras_openpose.py --input " + videofile);
 }
 
 // show about window

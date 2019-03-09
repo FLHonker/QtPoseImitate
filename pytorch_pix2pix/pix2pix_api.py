@@ -13,7 +13,7 @@ from util import html
 def Pix2PixAPI(opt):
 
     # hard-code some parameters for api
-    opt.name = 'pbug_pix2pix_result'
+    opt.name = 'pbug_pix2pix'
     opt.model = 'pix2pix'       # required!!! why? unknown.
     opt.dataroot = './datasets/pbug_full'
     opt.num_threads = 1   # test code only supports num_threads = 1
@@ -23,8 +23,8 @@ def Pix2PixAPI(opt):
     opt.display_id = -1  # no visdom display
     opt.isTrain = False
     # opt.gpu_ids = '-1'
-    opt.loadSize = 512
-    opt.fineSize = 512
+    opt.loadSize = 256
+    opt.fineSize = 256
     opt.epoch = 'latest'
     opt.phase = "test"
     opt.results_dir = './'
@@ -51,7 +51,7 @@ def Pix2PixAPI(opt):
             img_path = model.get_image_paths()
             print('processing (%04d)-th image... %s' % (i, img_path))
             save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize)
-        time.sleep(0.1)
+        time.sleep(0.1) # 0.1s/step
 
 def gen_fake():
     opt = TestOptions().parse()
