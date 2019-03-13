@@ -3,7 +3,7 @@ import numpy as np
 
 
 def config_reader():
-    config = ConfigObj('config')
+    config = ConfigObj('./keras_openpose/config')
 
     param = config['param']
     model_id = param['modelID']

@@ -8,8 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     timer = new QTimer(this);
-    openpose_pyprocess = new QProcess();
-    pix2pix_pyprocess = new QProcess();
+    pyprocess = new QProcess();
     connect(timer,SIGNAL(timeout()),this,SLOT(showPose()));     // slot
 }
 
@@ -18,8 +17,7 @@ MainWindow::~MainWindow()
     cap.release();
     delete ui;
     delete timer;
-    delete openpose_pyprocess;
-    delete pix2pix_pyprocess;
+    delete pyprocess;
     delete aboutDlg;
 }
 
@@ -43,24 +41,25 @@ void MainWindow::displayImg(QLabel *label, Mat mat)
 
 int MainWindow::loadCapture(int index)
 {
-    cap.open(index);
-    if(!cap.isOpened())
-    {
-        ui->statusBar->showMessage("Load video from camera [" + QString(index) + "] failed!", msgTime);
-        return -1;
-    }
-    width_cap = cap.get(CAP_PROP_FRAME_WIDTH);
-    height_cap = cap.get(CAP_PROP_FRAME_HEIGHT);
-    count_frame = cap.get(CAP_PROP_FRAME_COUNT);
+//    cap.open(index);
+//    if(!cap.isOpened())
+//    {
+//        ui->statusBar->showMessage("Load video from camera [" + QString(index) + "] failed!", msgTime);
+//        return -1;
+//    }
+//    width_cap = cap.get(CAP_PROP_FRAME_WIDTH);
+//    height_cap = cap.get(CAP_PROP_FRAME_HEIGHT);
+//    count_frame = cap.get(CAP_PROP_FRAME_COUNT);
+    srcVideo = "cam";
     return 0;
 }
 
 // Qt call pytorch-pix2pix
-int MainWindow::pix2pix_pytorch()
+int MainWindow::callpython()
 {
     QString curPath = QDir::currentPath();
     QDir::setCurrent(QString::fromStdString(pix2pixPath));
-    pix2pix_pyprocess->start("python3 pix2pix_api.py");
+    pyprocess->start("python3 pubgPoseFake.py --input " + srcVideo);
 //    QDir::setCurrent(curPath);  // back to previous path.
 }
 
@@ -82,8 +81,8 @@ void MainWindow::showPose()
 
 void MainWindow::on_action_load_video_triggered()
 {
-    videofile = QFileDialog::getOpenFileName(this, tr("Open video"), ".", tr("video files(*.mp4 *.avi)"));
-    if(!videofile.isEmpty())
+    srcVideo = QFileDialog::getOpenFileName(this, tr("Open video"), ".", tr("video files(*.mp4 *.avi)"));
+    if(!srcVideo.isEmpty())
     {
         ui->statusBar->showMessage("Video has been loaded successfully!", msgTime);
     }else{
@@ -94,7 +93,7 @@ void MainWindow::on_action_load_video_triggered()
 
 void MainWindow::on_startBtn_clicked()
 {
-    pix2pix_pytorch();
+    callpython();
     if(ui->startBtn->text() == tr("Start"))
         on_action_start_T_triggered();
     else
@@ -110,7 +109,7 @@ void MainWindow::on_action_stop_P_triggered()
 
 void MainWindow::on_action_start_T_triggered()
 {
-    if(videofile == "")
+    if(srcVideo == "")
     {
         ui->statusBar->showMessage("Please load VideoCaptire first!");
         QMessageBox::warning(this, "Warning", "Please load VideoCaptire first!");
@@ -119,8 +118,6 @@ void MainWindow::on_action_start_T_triggered()
     timer->start(5);    // msec
     ui->startBtn->setText("Stop");
     ui->statusBar->showMessage("Running...");
-    QDir::setCurrent(QString::fromStdString(openposePath));
-    openpose_pyprocess->start("python3 keras_openpose.py --input " + videofile);
 }
 
 // show about window
