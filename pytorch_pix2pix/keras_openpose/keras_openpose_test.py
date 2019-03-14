@@ -238,7 +238,7 @@ def process (input_image, params, model_params):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, default='../images/pbug_man_450x420.avi', help='input video')
-    parser.add_argument('--output', type=str, default='../images/pose_out.avi', help='output pose video')
+    parser.add_argument('--output', type=str, default='../result/pose_out.avi', help='output pose video')
     parser.add_argument('--model', type=str, default='model/keras/model.h5', help='path to the weights file')
 
     args = parser.parse_args()

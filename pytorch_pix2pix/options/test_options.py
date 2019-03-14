@@ -5,8 +5,8 @@ class TestOptions(BaseOptions):
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)
         parser.add_argument('--input', type=str, default='../images/pbug_man_450x420.avi', help='input src video')
-        parser.add_argument('--outpose', type=str, default='../images/pose_out.avi', help='output pose video')
-        parser.add_argument('--outfake', type=str, default='../images/fake_out.avi', help='output fake video')
+        parser.add_argument('--outpose', type=str, default='../result/pose_out.avi', help='output pose video')
+        parser.add_argument('--outfake', type=str, default='../result/fake_out.avi', help='output fake video')
         parser.add_argument('--ntest', type=int, default=float("inf"), help='# of test examples.')
         parser.add_argument('--results_dir', type=str, default='./results/', help='saves results here.')
         parser.add_argument('--aspect_ratio', type=float, default=1.0, help='aspect ratio of result images')
