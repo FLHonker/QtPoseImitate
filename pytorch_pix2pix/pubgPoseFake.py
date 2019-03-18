@@ -1,5 +1,5 @@
-import argparse
-import os
+# import argparse
+# import os
 import cv2
 import math
 import time
@@ -36,7 +36,7 @@ w = 256
 h = 256
 size = (25,256)
 
-def process (input_image, params, model_params):
+def openpose(input_image, params, model_params):
 
     oriImg = input_image  # B,G,R order
     multiplier = [x * model_params['boxsize'] / oriImg.shape[0] for x in params['scale_search']]
@@ -289,7 +289,7 @@ if __name__ == '__main__':
             break
         params, model_params = config_reader()
         # generate image with body parts
-        poseFrame = process(frame, params, model_params)
+        poseFrame = openpose(frame, params, model_params)
         # cur_pose + cur_frame 横向连接，图片作为pix2pix输入
         cur_pairs = np.concatenate([poseFrame, frame], axis=1)
         # write to pix2pix workdir
@@ -314,5 +314,5 @@ if __name__ == '__main__':
     print('{}张帧图像，处理完成！耗时{:.4f}s.'.format(frameNum, end_time - start_time))
     
     cap.release()
-    poseout.release()
+    posevideo.release()
     cv2.destroyAllWindows()    
