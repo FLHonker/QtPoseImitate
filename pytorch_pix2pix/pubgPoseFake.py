@@ -6,9 +6,9 @@ import time
 import numpy as np
 # for keras_openpose
 from keras_openpose import util
+from keras_openpose.model import get_testing_model
 from keras_openpose.config_reader import config_reader
 from scipy.ndimage.filters import gaussian_filter
-from keras_openpose.model import get_testing_model
 from options.test_options import TestOptions
 from pix2pix_class import Pix2Pix
 
@@ -34,7 +34,6 @@ colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0]
 
 w = 256
 h = 256
-size = (25,256)
 
 def openpose(input_image, params, model_params):
 
@@ -215,10 +214,14 @@ def openpose(input_image, params, model_params):
     #fill the image with black
     poseFrame.fill(1)
 
+    # draw 18 keypoints
     for i in range(18):
         for j in range(len(all_peaks[i])):
+            # loc = all_peaks[i][j][0:2]
+            # print('x:', loc[0], ', y:', loc[1])
             cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
 
+    # draw 17 parts of a body
     stickwidth = 4
     for i in range(17):
         for n in range(len(subset)):
@@ -237,7 +240,7 @@ def openpose(input_image, params, model_params):
             cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
             poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
     
-    return poseFrame       
+    return poseFrame
 
 
 #---------------------------- main run -----------------------------
@@ -257,8 +260,8 @@ if __name__ == '__main__':
     print('load model...')
     # authors of original model don't use
     # vgg normalization (subtracting mean) on input images
-    model = get_testing_model()
-    model.load_weights(keras_weights_file)
+    openpose_model = get_testing_model()
+    openpose_model.load_weights(keras_weights_file)
     print('* h5模型加载时间为：{:.2f}s.'.format(time.time() - tic))
     if opt.input and opt.input != "cam":
         cap = cv2.VideoCapture(opt.input)

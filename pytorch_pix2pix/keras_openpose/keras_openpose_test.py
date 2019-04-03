@@ -8,6 +8,7 @@ from config_reader import config_reader
 from scipy.ndimage.filters import gaussian_filter
 from model import get_testing_model
 
+
 # find connection in the specified sequence, center 29 is in the position 15
 limbSeq = [[2, 3], [2, 6], [3, 4], [4, 5], [6, 7], [7, 8], [2, 9], [9, 10], \
            [10, 11], [2, 12], [12, 13], [13, 14], [2, 1], [1, 15], [15, 17], \
@@ -27,7 +28,7 @@ colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0]
 
 w = 256
 h = 256
-size = (25,256)
+size = (256,256)
 
 def process (input_image, params, model_params):
 
@@ -47,17 +48,13 @@ def process (input_image, params, model_params):
 
         input_img = np.transpose(np.float32(imageToTest_padded[:,:,:,np.newaxis]), (3,0,1,2)) # required shape (1, width, height, channels)
 
-        
         output_blobs = model.predict(input_img)
-      
-        
-        
+
         # extract outputs, resize, and remove padding
         heatmap = np.squeeze(output_blobs[1])  # output 1 is heatmaps
         heatmap = cv2.resize(heatmap, (0, 0), fx=model_params['stride'], fy=model_params['stride'],
                              interpolation=cv2.INTER_CUBIC)
-        heatmap = heatmap[:imageToTest_padded.shape[0] - pad[2], :imageToTest_padded.shape[1] - pad[3],
-                  :]
+        heatmap = heatmap[:imageToTest_padded.shape[0] - pad[2], :imageToTest_padded.shape[1] - pad[3], :]
         heatmap = cv2.resize(heatmap, (oriImg.shape[1], oriImg.shape[0]), interpolation=cv2.INTER_CUBIC)
 
         paf = np.squeeze(output_blobs[0])  # output 0 is PAFs
@@ -200,7 +197,7 @@ def process (input_image, params, model_params):
                     subset = np.vstack([subset, row])
 
     # delete some rows of subset which has few parts occur
-    deleteIdx = [];
+    deleteIdx = []
     for i in range(len(subset)):
         if subset[i][-1] < 4 or subset[i][-2] / subset[i][-1] < 0.4:
             deleteIdx.append(i)
@@ -211,10 +208,21 @@ def process (input_image, params, model_params):
     #fill the image with black
     poseFrame.fill(1)
 
+    keypoints = []
+
+    # draw 18 keypoints
     for i in range(18):
         for j in range(len(all_peaks[i])):
-            cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
+            # loc = all_peaks[i][j][0:2]
+            # print('x:', loc[0], ', y:', loc[1])
+            # cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
+            keypoints.append(all_peaks[i][j][0:2])
 
+    keypoints = normalize(input_image.shape, keypoints, (1.0, 1.0))
+    for i in range(len(keypoints)):
+            cv2.circle(poseFrame, keypoints[i], 4, colors[i], thickness=-1)
+
+    # draw 17 parts of a body
     stickwidth = 4
     for i in range(17):
         for n in range(len(subset)):
@@ -228,17 +236,42 @@ def process (input_image, params, model_params):
             mY = np.mean(Y)
             length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
             angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
-            polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0,
-                                       360, 1)
+            polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0, 360, 1)
             cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
             poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
     
     return poseFrame       
 
+
+def normalize(img_size, src_points, scale):
+    
+    normalized_points = []
+    # 缩放
+    center_x = 0
+    center_y = 0
+    for i in range(len(src_points)):
+        x = src_points[i][0] * scale[0]
+        y = src_points[i][1] * scale[1]
+        normalized_points.append((int(x), int(y)))
+        center_x += x
+        center_y += y
+
+    # 平移到画布中央
+    center_x = center_x / len(normalized_points)
+    center_y = center_y / len(normalized_points)
+    move_x = img_size[1] / 2 - center_x # shape[1] = width
+    move_y = img_size[0] / 2 - center_y # shape[0] = height
+    for i in range(len(normalized_points)):
+        x = normalized_points[i][0] + move_x
+        y = normalized_points[i][1] + move_y - 20   # dela配重
+        normalized_points[i] = (int(x), int(y))
+
+    return normalized_points
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, default='../images/pbug_man_450x420.avi', help='input video')
-    parser.add_argument('--output', type=str, default='../result/pose_out.avi', help='output pose video')
+    parser.add_argument('--input', type=str, default='../../images/pbug_man_450x420.avi', help='input video')
+    parser.add_argument('--output', type=str, default='../../result/pose_out.avi', help='output pose video')
     parser.add_argument('--model', type=str, default='model/keras/model.h5', help='path to the weights file')
 
     args = parser.parse_args()
@@ -293,7 +326,7 @@ if __name__ == '__main__':
         if cv2.waitKey(1) & 0xFF==ord('q'):
             break
     end_time = time.time()
-    print('{}张帧图像，处理完成！耗时{:.4f}s.'.format(frameNum, end_time - start_time))
+    print('{}张帧图像，处理完成！耗时{:.4f}s.'.format(j, end_time - start_time))
     
     cap.release()
     poseout.release()
