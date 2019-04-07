@@ -30,7 +30,7 @@ w = 256
 h = 256
 size = (256,256)
 
-def process (input_image, params, model_params):
+def process (input_image, params, model_params, pose_scale):
 
     oriImg = input_image  # B,G,R order
     multiplier = [x * model_params['boxsize'] / oriImg.shape[0] for x in params['scale_search']]
@@ -218,8 +218,8 @@ def process (input_image, params, model_params):
             # cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
             keypoints.append(all_peaks[i][j][0:2])
 
-    keypoints = normalize(input_image.shape, keypoints, (1.0, 1.0))
-    for i in range(len(keypoints)):
+    keypoints = normalize(keypoints, pose_scale)
+    for i in range(len(keypoints) if len(keypoints) < 18 else 18):
             cv2.circle(poseFrame, keypoints[i], 4, colors[i], thickness=-1)
 
     # draw 17 parts of a body
@@ -232,6 +232,9 @@ def process (input_image, params, model_params):
             cur_poseFrame = poseFrame.copy()
             Y = candidate[index.astype(int), 0]
             X = candidate[index.astype(int), 1]
+            # normalize parts
+            X = X * pose_scale[0]
+            Y = Y * pose_scale[1]
             mX = np.mean(X)
             mY = np.mean(Y)
             length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
@@ -240,37 +243,60 @@ def process (input_image, params, model_params):
             cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
             poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
     
+    poseFrame = move_pose_center(input_image.shape, poseFrame)
     return poseFrame       
 
 
-def normalize(img_size, src_points, scale):
-    
+# normalize keypoints
+def normalize(src_points, scale):
+
     normalized_points = []
     # 缩放
-    center_x = 0
-    center_y = 0
+    mean_x = 0
+    mean_y = 0
     for i in range(len(src_points)):
         x = src_points[i][0] * scale[0]
         y = src_points[i][1] * scale[1]
         normalized_points.append((int(x), int(y)))
-        center_x += x
-        center_y += y
+        # mean_x += x
+        # mean_y += y
 
     # 平移到画布中央
-    center_x = center_x / len(normalized_points)
-    center_y = center_y / len(normalized_points)
-    move_x = img_size[1] / 2 - center_x # shape[1] = width
-    move_y = img_size[0] / 2 - center_y # shape[0] = height
-    for i in range(len(normalized_points)):
-        x = normalized_points[i][0] + move_x
-        y = normalized_points[i][1] + move_y - 20   # dela配重
-        normalized_points[i] = (int(x), int(y))
+    # mean_x = mean_x / len(normalized_points)
+    # mean_y = mean_y / len(normalized_points)
+    # move_x = img_size[1] / 2 - mean_x # shape[1] = width
+    # move_y = img_size[0] / 2 - mean_y - 20    # shape[0] = height,dela配重
+    # for i in range(len(normalized_points)):
+    #     x = normalized_points[i][0] + move_x
+    #     y = normalized_points[i][1] + move_y
+    #     normalized_points[i] = (int(x), int(y))
 
     return normalized_points
 
+# 平移pose到画布中央
+def move_pose_center(img_size, poseFrame):
+     
+    # convert image to grayscale image
+    gray_image = cv2.cvtColor(poseFrame, cv2.COLOR_BGR2GRAY)
+    # convert the grayscale image to binary image
+    ret, thresh = cv2.threshold(gray_image, 5, 255, cv2.THRESH_BINARY)
+    # cv2.imshow('thresh', thresh)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    cnt = contours[0]
+    (x, y), radius = cv2.minEnclosingCircle(cnt)
+    center = (int(x), int(y))
+    radius = int(radius)
+    # cv2.circle(poseFrame, center, radius, (255, 0, 0), 2)
+    # 平移矩阵M：[[1,0,x],[0,1,y]]
+    M = np.float32([[1, 0, img_size[0]/2-x], [0, 1, img_size[1]/2-y]])
+    dst = cv2.warpAffine(poseFrame, M, (img_size[1], img_size[0]))
+    
+    return dst
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, default='../../images/pbug_man_450x420.avi', help='input video')
+    parser.add_argument('--input', type=str, default='../../images/mv_450x420.avi', help='input video')
     parser.add_argument('--output', type=str, default='../../result/pose_out.avi', help='output pose video')
     parser.add_argument('--model', type=str, default='model/keras/model.h5', help='path to the weights file')
 
@@ -302,13 +328,14 @@ if __name__ == '__main__':
     print('start processing...')
     print('共计{}帧图像，预计耗时{:.2f}min.'.format(frameNum, frameNum * 1.75/60))
     j = 1
+    scale = (0.7, 0.7)  # request x==y!! a bug.
     while(1):  
         ret, frame = cap.read()
         if not ret:
             break
         params, model_params = config_reader()
         # generate image with body parts
-        poseFrame = process(frame, params, model_params)
+        poseFrame = process(frame, params, model_params, scale)
         # cur_pose + cur_frame 横向连接，图片作为pix2pix输入
         cur_pairs = np.concatenate([poseFrame, frame], axis=1)
         # write to pix2pix workdir
@@ -316,7 +343,8 @@ if __name__ == '__main__':
         # write in video
         poseout.write(poseFrame)
         end_time = time.time()
-        cv2.imshow("poseFrame", poseFrame)
+        cv2.imshow('frame', frame)
+        cv2.imshow('poseFrame, scale={}'.format(scale), poseFrame)
         j += 1
         if j % 20 == 0:
             # 记录时间
