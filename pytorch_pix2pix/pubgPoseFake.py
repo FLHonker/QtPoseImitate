@@ -11,6 +11,7 @@ from keras_openpose.config_reader import config_reader
 from scipy.ndimage.filters import gaussian_filter
 from options.test_options import TestOptions
 from pix2pix_class import Pix2Pix
+from normalization import normalize, getScale, move_pose_center
 
 
 # ------------------------ keras_openpose -----------------------------
@@ -32,10 +33,11 @@ colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0]
           [85, 0, 255], \
           [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
 
+# size of pose figure canvas
 w = 256
 h = 256
 
-def openpose(input_image, params, model_params):
+def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
 
     oriImg = input_image  # B,G,R order
     multiplier = [x * model_params['boxsize'] / oriImg.shape[0] for x in params['scale_search']]
@@ -53,7 +55,7 @@ def openpose(input_image, params, model_params):
 
         input_img = np.transpose(np.float32(imageToTest_padded[:,:,:,np.newaxis]), (3,0,1,2)) # required shape (1, width, height, channels)
 
-        output_blobs = model.predict(input_img)
+        output_blobs = openpose_model.predict(input_img)
 
         # extract outputs, resize, and remove padding
         heatmap = np.squeeze(output_blobs[1])  # output 1 is heatmaps
@@ -209,17 +211,23 @@ def openpose(input_image, params, model_params):
             deleteIdx.append(i)
     subset = np.delete(subset, deleteIdx, axis=0)
 
-    #create a black use numpy
+    # create a black use numpy
     poseFrame = np.zeros((h, w, 3), np.uint8)   
-    #fill the image with black
+    # fill the image with black
     poseFrame.fill(1)
 
     # draw 18 keypoints
+    keypoints = []
     for i in range(18):
         for j in range(len(all_peaks[i])):
             # loc = all_peaks[i][j][0:2]
             # print('x:', loc[0], ', y:', loc[1])
-            cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
+            # cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
+            keypoints.append(all_peaks[i][j][0:2])
+
+    keypoints = normalize(keypoints, pose_scale)
+    for i in range(len(keypoints) if len(keypoints) < 18 else 18):
+            cv2.circle(poseFrame, keypoints[i], 4, colors[i], thickness=-1)
 
     # draw 17 parts of a body
     stickwidth = 4
@@ -231,6 +239,9 @@ def openpose(input_image, params, model_params):
             cur_poseFrame = poseFrame.copy()
             Y = candidate[index.astype(int), 0]
             X = candidate[index.astype(int), 1]
+            # normalize parts
+            X = X * pose_scale[0]
+            Y = Y * pose_scale[1]
             mX = np.mean(X)
             mY = np.mean(Y)
             length = ((X[0] - X[1]) ** 2 + (Y[0] - Y[1]) ** 2) ** 0.5
@@ -239,7 +250,8 @@ def openpose(input_image, params, model_params):
                                        360, 1)
             cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
             poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
-    
+    poseFrame,_ = move_pose_center(input_image.shape, poseFrame)
+
     return poseFrame
 
 
@@ -286,13 +298,14 @@ if __name__ == '__main__':
     print('start processing...')
     print('共计{}帧图像，预计耗时{:.2f}min.'.format(frameNum, frameNum * 1.75/60))
     j = 1
+    scale = getScale(pose_radius=104.0, model_radius=104.0)
     while(1):  
         ret, frame = cap.read()
         if not ret:
             break
         params, model_params = config_reader()
         # generate image with body parts
-        poseFrame = openpose(frame, params, model_params)
+        poseFrame = openpose(frame, params, model_params, pose_scale=scale)
         # cur_pose + cur_frame 横向连接，图片作为pix2pix输入
         cur_pairs = np.concatenate([poseFrame, frame], axis=1)
         # write to pix2pix workdir
@@ -302,7 +315,7 @@ if __name__ == '__main__':
         # write in video
         posevideo.write(poseFrame)
         end_time = time.time()
-        cv2.imshow("poseFrame", poseFrame)
+        # cv2.imshow("poseFrame", poseFrame)
         fakeFrame = cv2.imread('../pytorch_pix2pix/pbug_pix2pix/test_latest/images/curPose_fake_B.jpg')
         fakevideo.write(fakeFrame)
         j += 1
@@ -318,4 +331,5 @@ if __name__ == '__main__':
     
     cap.release()
     posevideo.release()
+    fakevideo.release()
     cv2.destroyAllWindows()    

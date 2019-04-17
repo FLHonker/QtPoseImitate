@@ -1,5 +1,6 @@
 # 归一化 'pose trick figure'
 # 缩放 + 平移
+# pbug_woman.radius = 103~105
 import cv2
 import numpy as np
 
@@ -47,4 +48,9 @@ def move_pose_center(img_size, poseFrame):
     M = np.float32([[1, 0, img_size[0]/2-x], [0, 1, img_size[1]/2-y]])
     dst = cv2.warpAffine(poseFrame, M, (img_size[1], img_size[0]))
     
-    return dst
+    return dst, radius 
+
+# 根据外接圆半径计算缩放比例
+def getScale(pose_radius, model_radius=104.0):
+    s = model_radius / pose_radius
+    return (s, s)

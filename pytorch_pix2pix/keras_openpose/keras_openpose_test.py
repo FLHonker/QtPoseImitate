@@ -208,9 +208,8 @@ def process (input_image, params, model_params, pose_scale):
     #fill the image with black
     poseFrame.fill(1)
 
-    keypoints = []
-
     # draw 18 keypoints
+    keypoints = []
     for i in range(18):
         for j in range(len(all_peaks[i])):
             # loc = all_peaks[i][j][0:2]
@@ -243,8 +242,9 @@ def process (input_image, params, model_params, pose_scale):
             cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
             poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
     
-    poseFrame = move_pose_center(input_image.shape, poseFrame)
-    return poseFrame       
+    poseFrame, cur_radius = move_pose_center(input_image.shape, poseFrame)
+
+    return poseFrame, cur_radius       
 
 
 # normalize keypoints
@@ -285,18 +285,24 @@ def move_pose_center(img_size, poseFrame):
     cnt = contours[0]
     (x, y), radius = cv2.minEnclosingCircle(cnt)
     center = (int(x), int(y))
+    print('>>> radius:', radius)
     radius = int(radius)
     # cv2.circle(poseFrame, center, radius, (255, 0, 0), 2)
     # 平移矩阵M：[[1,0,x],[0,1,y]]
     M = np.float32([[1, 0, img_size[0]/2-x], [0, 1, img_size[1]/2-y]])
     dst = cv2.warpAffine(poseFrame, M, (img_size[1], img_size[0]))
     
-    return dst
+    return dst, min(radius, img_size[0]/2, img_size[1]/2)
+
+# 根据外接圆半径计算缩放比例
+def getScale(pose_radius, model_radius=104.0):
+    s = model_radius / pose_radius
+    return (s, s)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, default='../../images/mv_450x420.avi', help='input video')
+    parser.add_argument('--input', type=str, default='../../images/pbug_man_450x420.avi', help='input video')
     parser.add_argument('--output', type=str, default='../../result/pose_out.avi', help='output pose video')
     parser.add_argument('--model', type=str, default='model/keras/model.h5', help='path to the weights file')
 
@@ -335,7 +341,9 @@ if __name__ == '__main__':
             break
         params, model_params = config_reader()
         # generate image with body parts
-        poseFrame = process(frame, params, model_params, scale)
+        poseFrame, pose_radius = process(frame, params, model_params, scale)
+        scale = getScale(pose_radius)
+        print('>>> scale = ', scale)
         # cur_pose + cur_frame 横向连接，图片作为pix2pix输入
         cur_pairs = np.concatenate([poseFrame, frame], axis=1)
         # write to pix2pix workdir
@@ -344,7 +352,7 @@ if __name__ == '__main__':
         poseout.write(poseFrame)
         end_time = time.time()
         cv2.imshow('frame', frame)
-        cv2.imshow('poseFrame, scale={}'.format(scale), poseFrame)
+        cv2.imshow('poseFrame, scale', poseFrame)
         j += 1
         if j % 20 == 0:
             # 记录时间
