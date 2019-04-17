@@ -1,5 +1,5 @@
 # import argparse
-# import os
+import os
 import cv2
 import math
 import time
@@ -12,7 +12,6 @@ from scipy.ndimage.filters import gaussian_filter
 from options.test_options import TestOptions
 from pix2pix_class import Pix2Pix
 from normalization import normalize, getScale, move_pose_center
-
 
 # ------------------------ keras_openpose -----------------------------
 
@@ -250,10 +249,24 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
                                        360, 1)
             cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
             poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
-    poseFrame,_ = move_pose_center(input_image.shape, poseFrame)
+    poseFrame, pose_radius = move_pose_center(input_image.shape, poseFrame)
+    # 记录pose半径
+    record_logs('> pose_radius = {:.3f}'.format(pose_radius))
 
     return poseFrame
 
+# log func
+def record_logs(str, logFile='./log/pubg.log'):
+    f = open(logFile, mode='a', encoding='utf-8')  # add 
+    f.write(str + '\n')
+    f.close()
+    print(str)
+
+# 记录写入交换区，供Qt前端读取
+def inswap(str, swapFile='./log/swap'):
+    f = open(swapFile, mode='w', encoding='utf-8')
+    f.write(str)
+    f.close()
 
 #---------------------------- main run -----------------------------
 ## for video:
@@ -262,6 +275,27 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
 # fps = 20.0
 if __name__ == '__main__':
 
+    # log files
+    logPath = './log'
+    logFile = logPath + '/pubg.log'
+    swapFile = logPath + 'swap'
+    
+    # 判断目录是否存在，不存在则创建
+    if not os.path.exists(logPath):
+        os.makedirs(logPath)
+    # 判断文件是否存在，存在则删除替换新文件
+    if os.path.exists(logFile):
+        os.remove(logFile)
+    os.mknod(logFile)
+
+    if not os.path.exists(swapFile):
+        os.mknod(swapFile)
+
+    record_logs('******** pubgPoseFake logs ********\n')
+    
+    msg = 'Pose Faking System is running!'
+    inswap(msg)
+
     keras_weights_file = './keras_openpose/model/keras/model.h5'
 
     opt = TestOptions().parse()
@@ -269,12 +303,17 @@ if __name__ == '__main__':
     
     # load model
     tic = time.time()
-    print('load model...')
+    msg = 'load openpose (h5)model...'
+    record_logs(msg)
+    inswap(msg)
     # authors of original model don't use
     # vgg normalization (subtracting mean) on input images
     openpose_model = get_testing_model()
     openpose_model.load_weights(keras_weights_file)
-    print('* h5模型加载时间为：{:.2f}s.'.format(time.time() - tic))
+    msg = '* h5模型加载时间为：{:.2f}s.'.format(time.time() - tic)
+    record_logs(msg)
+    inswap(msg)
+
     if opt.input and opt.input != "cam":
         cap = cv2.VideoCapture(opt.input)
     else:
@@ -295,11 +334,22 @@ if __name__ == '__main__':
     fakevideo = cv2.VideoWriter(opt.outfake, fourcc, 20.0, fake_size)
 
     start_time = time.time()
-    print('start processing...')
-    print('共计{}帧图像，预计耗时{:.2f}min.'.format(frameNum, frameNum * 1.75/60))
-    j = 1
+    msg = '>>> start processing frame by frame...'
+    record_logs(msg)
+    inswap(msg)
+    
+    msg = '*共计{}帧图像，预计耗时{:.2f}min.'.format(frameNum, frameNum * 2.0/60)
+    record_logs(msg)
+    inswap(msg)
+
     scale = getScale(pose_radius=104.0, model_radius=104.0)
-    while(1):  
+    msg = 'pose_scale is set to:{}'.format(scale)
+    record_logs(msg)
+    # inswap(msg)
+
+    j = 1
+    while (1):
+        frame_start = time.time()
         ret, frame = cap.read()
         if not ret:
             break
@@ -318,18 +368,31 @@ if __name__ == '__main__':
         # cv2.imshow("poseFrame", poseFrame)
         fakeFrame = cv2.imread('../pytorch_pix2pix/pbug_pix2pix/test_latest/images/curPose_fake_B.jpg')
         fakevideo.write(fakeFrame)
+        frame_end = time.time()
+        inswap('cost time: {:.3f}s'.format(frame_end-frame_start))
+
         j += 1
         if j % 20 == 0:
             # 记录时间
             end_time = time.time()
-            print('已处理{}/{}帧图像， 用时{:.4f}s， 平均每帧用时{:.4f}s'.format(j, int(frameNum), end_time - start_time, (end_time-start_time)/j))
+            msg = '已处理{}/{}帧图像， 用时{:.4f}s， 平均每帧用时{:.4f}s\n'.format(j, int(frameNum), end_time - start_time, (end_time-start_time)/j)
+            record_logs(msg)
+            inswap(msg)
+
 
         if cv2.waitKey(1) & 0xFF==ord('q'):
             break
     end_time = time.time()
-    print('{}张帧图像，处理完成！耗时{:.4f}s.'.format(frameNum, end_time - start_time))
-    
+    msg = '>>> {}张帧图像，处理完成！耗时{:.4f}s.'.format(frameNum, end_time - start_time)
+    record_logs(msg)
+    record_logs('临时过程图path = \'pytorch_pix2pix/datasets/pbug_full/test/\'')
+    msg = 'avi视频path = \'./result/\''
+    record_logs(msg)
+    inswap(msg)
+
+    # clear
+    inswap('') 
     cap.release()
     posevideo.release()
     fakevideo.release()
-    cv2.destroyAllWindows()    
+    cv2.destroyAllWindows()  

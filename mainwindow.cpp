@@ -7,16 +7,18 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    timer = new QTimer(this);
+    show_timer = new QTimer(this);
+    msg_timer = new QTimer(this);
     pyprocess = new QProcess();
-    connect(timer,SIGNAL(timeout()),this,SLOT(showPose()));     // slot
+    connect(show_timer, SIGNAL(timeout()), this, SLOT(showPose()));     // slot
+    connect(msg_timer, SIGNAL(timeout()), this, SLOT(displayMsg()));
 }
 
 MainWindow::~MainWindow()
 {
     cap.release();
     delete ui;
-    delete timer;
+    delete show_timer;
     delete pyprocess;
     delete aboutDlg;
 }
@@ -59,6 +61,7 @@ int MainWindow::callpython()
 {
     QString curPath = QDir::currentPath();
     QDir::setCurrent(QString::fromStdString(pix2pixPath));
+    // call pubgPoseFake.py!!!
     pyprocess->start("python3 pubgPoseFake.py --input " + srcVideo);
 //    QDir::setCurrent(curPath);  // back to previous path.
 }
@@ -79,6 +82,18 @@ void MainWindow::showPose()
     displayImg(ui->fakeImage, fakeMat);
 }
 
+void MainWindow::displayMsg()
+{
+    QFile swapFile(QString::fromStdString(pix2pixPath+"log/swap"));
+    if(!swapFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        ui->statusBar->showMessage("swap file open failed!");
+        return;
+    }
+    QTextStream txtInput(&swapFile);    // read
+    ui->statusBar->showMessage(txtInput.readLine());    // show msg
+}
+
 void MainWindow::on_action_load_video_triggered()
 {
     srcVideo = QFileDialog::getOpenFileName(this, tr("Open video"), ".", tr("video files(*.mp4 *.avi)"));
@@ -89,7 +104,6 @@ void MainWindow::on_action_load_video_triggered()
         ui->statusBar->showMessage("No such video file! Retry,please.", msgTime);
     }
 }
-
 
 void MainWindow::on_startBtn_clicked()
 {
@@ -102,7 +116,8 @@ void MainWindow::on_startBtn_clicked()
 
 void MainWindow::on_action_stop_P_triggered()
 {
-    timer->stop();
+    show_timer->stop();
+    msg_timer->stop();
     ui->startBtn->setText("Start");
     ui->statusBar->showMessage("Stopped.");
 }
@@ -115,9 +130,10 @@ void MainWindow::on_action_start_T_triggered()
         QMessageBox::warning(this, "Warning", "Please load VideoCaptire first!");
         return;
     }
-    timer->start(5);    // msec
+    show_timer->start(20);    // msec
+    msg_timer->start(100);  // 100 msec
     ui->startBtn->setText("Stop");
-    ui->statusBar->showMessage("Running...");
+//    ui->statusBar->showMessage("Running...");
 }
 
 // show about window

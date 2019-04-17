@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
 #include <QLabel>
 #include <QTimer>
 #include <QProcess>
@@ -33,7 +35,8 @@ private:
     Ui::MainWindow *ui;
     QString srcVideo;
     VideoCapture cap;   // load video or camera
-    QTimer *timer;
+    QTimer *show_timer;
+    QTimer *msg_timer;
     QProcess *pyprocess;
     AboutDialog *aboutDlg;
     // size of cap
@@ -55,6 +58,7 @@ private slots:
     void on_action_stop_P_triggered();
     void on_action_start_T_triggered();
     void showPose();     // estimate pose by DNN and show on the panel.
+    void displayMsg();   // display message from pubgPoseFake.py
     void on_action_about_triggered();
     void on_action_how_to_use_triggered();
 };
