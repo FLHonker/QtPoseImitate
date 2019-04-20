@@ -212,8 +212,8 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
 
     # create a black use numpy
     poseFrame = np.zeros((h, w, 3), np.uint8)   
-    # fill the image with black
-    poseFrame.fill(1)
+    # fill the image with white
+    # poseFrame.fill(255)
 
     # draw 18 keypoints
     keypoints = []
@@ -235,7 +235,7 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
             index = subset[n][np.array(limbSeq[i]) - 1]
             if -1 in index:
                 continue
-            cur_poseFrame = poseFrame.copy()
+            # cur_poseFrame = poseFrame.copy()
             Y = candidate[index.astype(int), 0]
             X = candidate[index.astype(int), 1]
             # normalize parts
@@ -247,8 +247,8 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
             angle = math.degrees(math.atan2(X[0] - X[1], Y[0] - Y[1]))
             polygon = cv2.ellipse2Poly((int(mY), int(mX)), (int(length / 2), stickwidth), int(angle), 0,
                                        360, 1)
-            cv2.fillConvexPoly(cur_poseFrame, polygon, colors[i])
-            poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
+            cv2.fillConvexPoly(poseFrame, polygon, colors[i])
+            # poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
     poseFrame, pose_radius = move_pose_center(input_image.shape, poseFrame)
     # 记录pose半径
     record_logs('> pose_radius = {:.3f}'.format(pose_radius))
@@ -337,8 +337,8 @@ if __name__ == '__main__':
     msg = '>>> start processing frame by frame...'
     record_logs(msg)
     inswap(msg)
-    
-    msg = '*共计{}帧图像，预计耗时{:.2f}min.'.format(frameNum, frameNum * 2.0/60)
+    time.sleep(1)
+    msg = '* 共计{}帧图像，预计耗时{:.2f}min.'.format(frameNum, frameNum * 2.0/60)
     record_logs(msg)
     inswap(msg)
 

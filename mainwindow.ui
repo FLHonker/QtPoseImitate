@@ -140,6 +140,8 @@
     <addaction name="action_Capture"/>
     <addaction name="action_Run"/>
     <addaction name="action_Stop"/>
+    <addaction name="actionC_lear_L"/>
+    <addaction name="actionR_estart"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -214,10 +216,10 @@
   </action>
   <action name="action_Run">
    <property name="text">
-    <string>&amp;Run(R)</string>
+    <string>Run(&amp;G)</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+R</string>
+    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="action_Stop">
@@ -260,6 +262,16 @@
   <action name="action_start_T">
    <property name="text">
     <string>s&amp;tart(T)</string>
+   </property>
+  </action>
+  <action name="actionR_estart">
+   <property name="text">
+    <string>&amp;Restart(R)</string>
+   </property>
+  </action>
+  <action name="actionC_lear_L">
+   <property name="text">
+    <string>C&amp;lear(L)</string>
    </property>
   </action>
  </widget>

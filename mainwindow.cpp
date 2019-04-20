@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    is_running = false;
 
     show_timer = new QTimer(this);
     msg_timer = new QTimer(this);
@@ -20,7 +21,7 @@ MainWindow::~MainWindow()
     delete ui;
     delete show_timer;
     delete pyprocess;
-    delete aboutDlg;
+    delete aboutDlg;   
 }
 
 void MainWindow::displayImg(QLabel *label, Mat mat)
@@ -78,8 +79,8 @@ void MainWindow::showPose()
      * the result directory. This process is processed by the non-blocking thread in the
      * background. The next step is to directly display the fake image.
      */
-    Mat fakeMat = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.jpg");
-    displayImg(ui->fakeImage, fakeMat);
+    curFake = imread(pix2pixPath + "pbug_pix2pix/test_latest/images/curPose_fake_B.jpg");
+    displayImg(ui->fakeImage, curFake);
 }
 
 void MainWindow::displayMsg()
@@ -107,7 +108,11 @@ void MainWindow::on_action_load_video_triggered()
 
 void MainWindow::on_startBtn_clicked()
 {
-    callpython();
+    if(!is_running)
+    {
+        callpython();
+        is_running = true;
+    }
     if(ui->startBtn->text() == tr("Start"))
         on_action_start_T_triggered();
     else
@@ -171,4 +176,47 @@ void MainWindow::on_action_how_to_use_triggered()
                              "4. The amount of calculation is huge. Generally, the laptop will"
                              "   make a loud noise and heat. You can quit and all resources can be"
                              "   released.\n");
+}
+
+// Restart
+void MainWindow::on_actionR_estart_triggered()
+{
+    on_action_stop_P_triggered();
+    on_actionC_lear_L_triggered();
+    on_startBtn_clicked();
+}
+
+// Clear
+void MainWindow::on_actionC_lear_L_triggered()
+{
+    pyprocess->close();
+    is_running = false;
+    ui->srcImage->clear();
+    ui->poseImage->clear();
+    ui->fakeImage->clear();
+    ui->startBtn->setText("Start");
+    ui->srcImage->setText("src");
+    ui->poseImage->setText("pose");
+    ui->fakeImage->setText("fake");
+    ui->statusBar->showMessage("All settings are reset!", 1500);
+}
+
+void MainWindow::on_action_Run_triggered()
+{
+    on_startBtn_clicked();
+}
+
+void MainWindow::on_action_Stop_triggered()
+{
+    on_action_stop_P_triggered();
+}
+
+// Capture
+void MainWindow::on_action_Capture_triggered()
+{
+    string datetime = QDateTime::currentDateTime().toString("yyyy-MM-ddHH-mm-ss").toStdString();
+    imwrite(workDir+"images/"+datetime+"_src.jpg", curImg);
+    imwrite(workDir+"images/"+datetime+"_pose.jpg", curPose);
+    imwrite(workDir+"images/"+datetime+"_fake.jpg", curFake);
+    ui->statusBar->showMessage("3 Images have been saved to \'images/\' dir!");
 }

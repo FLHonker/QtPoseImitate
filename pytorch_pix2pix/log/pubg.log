@@ -1,20 +1,37 @@
 ******** pubgPoseFake logs ********
 
 load openpose (h5)model...
-* h5模型加载时间为：4.45s.
+* h5模型加载时间为：3.85s.
 >>> start processing frame by frame...
-共计462.0帧图像，预计耗时13.47min.
-pose_scale is set:(1.0, 1.0)
-> pose_radius = 146.000
-> pose_radius = 146.000
-> pose_radius = 146.000
-> pose_radius = 147.000
-> pose_radius = 147.000
-> pose_radius = 145.000
-> pose_radius = 145.000
-> pose_radius = 145.000
-> pose_radius = 145.000
-> pose_radius = 146.000
-> pose_radius = 145.000
-> pose_radius = 146.000
-> pose_radius = 146.000
+* 共计462.0帧图像，预计耗时15.40min.
+pose_scale is set to:(1.0, 1.0)
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+已处理20/462帧图像， 用时45.1296s， 平均每帧用时2.2565s
+
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
+> pose_radius = 307.000
