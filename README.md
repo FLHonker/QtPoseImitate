@@ -5,12 +5,16 @@
 @time: 2019.1.18 - 2019.5.31
 @project: 武汉理工大学本科毕业设计
 ```
-## Prerequisites
+使用Qt实现的基于openpose和pix2pix对抗网络的游戏人物动作模拟。本科毕业设计。
+
+## Requirements
+
 - Linux(Ubuntu18.04)
 - CPU - for test
-- NVIDIA GPU(12GB) + CUDA CuDNN - for train 
+ NVIDIA GPU(12GB) + CUDA CuDNN7.4 - for train 
 - Python >= 3.4
 - PyTorch >= 1.0.0
+- python-opencv >= 3.4.0
 - Keras
 - Qt 5.12
 
@@ -132,8 +136,30 @@
 
 ## CMU - OpenPose
 
+使用预训练好的OpenPose COCO模型，使用[下载脚本][3]自动下载到`pytorch_pix2pix/keras_openpose/model/keras/`，大约209MB，在[`keras_openpose_test.py`][5]中提供API，请自行查看注释，支持视频和图片直接输入，计算输出结果图/视频。
 
 ## pytorch-pix2pix
 
+reference _[pix2pix README][1]_
+
 ### pubg dataset
+
+pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch_pix2pix/datasets/`][4]目录下。
+
+## License
+
+本项目遵循开源协议MIT，其中不乏使用了一些开源代码，但是禁止商用！仅供相关领域爱好者研究学习！最终解释权归**Frank**(<frankliu624@gmail.com>)所有。
+如使用过程中存在疑问，而README中介绍不详细，欢迎联系Frank帮您解决。
+
+
+
+[1]:https://github.com/FLHonker/QtPoseImitate/blob/master/pytorch_pix2pix/README.md
+
+[2]:https://github.com/FLHonker/QtPoseImitate/blob/master/pytorch_pix2pix/docs/datasets.md
+
+[3]:pytorch_pix2pix/keras_openpose/model/get_keras_model.sh
+
+[4]:pytorch_pix2pix/datasets/
+
+[5]:pytorch_pix2pix/keras_openpose/keras_openpose_test.py
 

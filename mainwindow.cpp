@@ -198,6 +198,7 @@ void MainWindow::on_actionC_lear_L_triggered()
     ui->srcImage->setText("src");
     ui->poseImage->setText("pose");
     ui->fakeImage->setText("fake");
+    show_timer->stop();
     ui->statusBar->showMessage("All settings are reset!", 1500);
 }
 

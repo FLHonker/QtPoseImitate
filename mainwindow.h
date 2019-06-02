@@ -60,8 +60,6 @@ private slots:
     void on_startBtn_clicked();
     void on_action_stop_P_triggered();
     void on_action_start_T_triggered();
-    void showPose();     // estimate pose by DNN and show on the panel.
-    void displayMsg();   // display message from pubgPoseFake.py
     void on_action_about_triggered();
     void on_action_how_to_use_triggered();
     void on_actionR_estart_triggered();
@@ -69,6 +67,8 @@ private slots:
     void on_action_Run_triggered();
     void on_action_Stop_triggered();
     void on_action_Capture_triggered();
+    void showPose();     // estimate pose by DNN and show on the panel.
+    void displayMsg();   // display message from pubgPoseFake.py
 };
 
 #endif // MAINWINDOW_H
