@@ -140,6 +140,8 @@
 
 ## pytorch-pix2pix
 
+`pubgPoseFake.py`是OpenPose针对pix2pix的接口，用于输入视频提取pose后交给pix2pix进行合成。
+
 reference _[pix2pix README][1]_
 
 ### pubg dataset

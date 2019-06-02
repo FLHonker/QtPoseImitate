@@ -224,9 +224,9 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
             # cv2.circle(poseFrame, all_peaks[i][j][0:2], 4, colors[i], thickness=-1)
             keypoints.append(all_peaks[i][j][0:2])
 
-    keypoints = normalize(keypoints, pose_scale)
+    # keypoints = normalize(keypoints, pose_scale)
     for i in range(len(keypoints) if len(keypoints) < 18 else 18):
-            cv2.circle(poseFrame, keypoints[i], 4, colors[i], thickness=-1)
+        cv2.circle(poseFrame, keypoints[i], 4, colors[i], thickness=-1)
 
     # draw 17 parts of a body
     stickwidth = 4
@@ -249,9 +249,9 @@ def openpose(input_image, params, model_params, pose_scale=(1.0, 1.0)):
                                        360, 1)
             cv2.fillConvexPoly(poseFrame, polygon, colors[i])
             # poseFrame = cv2.addWeighted(poseFrame, 0.4, cur_poseFrame, 0.6, 0)
-    poseFrame, pose_radius = move_pose_center(input_image.shape, poseFrame)
+    # poseFrame, pose_radius = move_pose_center(input_image.shape, poseFrame)
     # 记录pose半径
-    record_logs('> pose_radius = {:.3f}'.format(pose_radius))
+    # record_logs('> pose_radius = {:.3f}'.format(pose_radius))
 
     return poseFrame
 
