@@ -144,7 +144,8 @@ reference _[pix2pix README][1]_
 
 ### pubg dataset
 
-pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch_pix2pix/datasets/`][4]目录下。
+pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch_pix2pix/datasets/`][4]目录下。本项目官方数据集下载地址:baiduyun
+链接:<https://pan.baidu.com/s/1z9LjKF7WuIpCUoMir0uFzA>  提取码:1d6n
 
 ## License
 
