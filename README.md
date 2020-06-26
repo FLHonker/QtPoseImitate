@@ -154,13 +154,13 @@ pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch
 
 ## Citation
 
-'''
+```
 @article{frank2019pubg,
   title         = {基于对抗网络的游戏人物动作模仿与实现},
   author        = {Frank Liu},
   year          = {2019},
 }
-'''
+```
 
 
 [1]:https://github.com/FLHonker/QtPoseImitate/blob/master/pytorch_pix2pix/README.md
