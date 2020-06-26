@@ -149,7 +149,7 @@ pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch
 
 ## License
 
-本项目遵循开源协议MIT，其中不乏使用了一些开源代码，但是禁止商用！仅供相关领域爱好者研究学习！最终解释权归**Frank**(<frankliu624@gmail.com>)所有。
+本项目遵循开源协议MIT，其中不乏使用了一些开源代码，但是禁止商用！仅供相关领域爱好者研究学习！最终解释权归**Frank**(<frankliu624@outlook.com>)所有。
 如使用过程中存在疑问，而README中介绍不详细，欢迎联系Frank帮您解决。
 
 
