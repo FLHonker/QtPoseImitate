@@ -1,7 +1,7 @@
 #　基于对抗网络的游戏人物动作模仿与实现
 
 ```
-@author: 刘宇昂(Frank Liu)
+@author: Frank Liu
 @time: 2019.1.18 - 2019.5.31
 @project: 武汉理工大学本科毕业设计
 ```
