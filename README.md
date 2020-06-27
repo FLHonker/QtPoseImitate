@@ -147,6 +147,20 @@ reference _[pix2pix README][1]_
 pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch_pix2pix/datasets/`][4]目录下。本项目官方数据集下载地址:baiduyun
 链接:<https://pan.baidu.com/s/1z9LjKF7WuIpCUoMir0uFzA>  提取码:1d6n
 
+## results
+
+<table>
+    <tr>
+        <td><center><iframe height=498 width=510 src="./images/src.avi"> src </center></td>
+        <td><center><iframe height=498 width=510 src="./images/pose.avi"> pose </center></td>
+        <td><center><iframe height=498 width=510 src="./images/fake.avi"> fake </center></td>
+    </tr>
+</table>
+
+## poster
+
+![poster][6]
+
 ## License
 
 本项目遵循开源协议MIT，其中不乏使用了一些开源代码，但是禁止商用！仅供相关领域爱好者研究学习！最终解释权归**Frank**(<frankliu624@outlook.com>)所有。
@@ -172,4 +186,6 @@ pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch
 [4]:pytorch_pix2pix/datasets/
 
 [5]:pytorch_pix2pix/keras_openpose/keras_openpose_test.py
+
+[6]:images/poster.png
 
