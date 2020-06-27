@@ -151,9 +151,9 @@ pix2pix数据集图片格式参照_[pix2pix Dataset][2]_，请放置于[`pytorch
 
 <table>
     <tr>
-        <td><center><iframe height=498 width=510 src="./images/src.avi"></center></td>
-        <td><center><iframe height=498 width=510 src="./images/pose.avi"></center></td>
-        <td><center><iframe height=498 width=510 src="./images/fake.avi"></center></td>
+        <td ><center><img src="./images/src.png" > src </center></td>
+        <td ><center><img src="./images/pose.png" > pose </center></td>
+        <td ><center><img src="./images/fake.png" > fake </center></td>
     </tr>
 </table>
 
